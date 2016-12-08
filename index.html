@@ -31,7 +31,7 @@
 			this.events = {};
 		};	
 		Event.prototype.on = function(type, callback) {
-			var events = this.events || {}; 
+			var events = this.events ? this.events : (this.events = {}); 
 			if(!events[type]){
 				observer = new Observer();
 				events[type] = observer;
@@ -40,7 +40,7 @@
 		};
 		Event.prototype.trigger = function(type) {
 			if(!this.events[type]) throw new Error(type+"不存在");
-			var args = [].slice.call(arguments, 1); args.unshift(this);
+			var args = [].slice.call(arguments, 1); 
 			var callbacks = this.events[type].callbacks, len = callbacks.length;
 			for(var i = 0; i < len; i++){
 				return callbacks[i].apply(this, args)
@@ -89,8 +89,59 @@
 		Class.extend = extend;
 		Class.extendProps = extendProps;
 		
-		var ModelBase = Class.extend({
+		var ModelBase = Class.extend(extendProps({
 			defaults  : {},
+			construct: function(options){
+				this.attrs = extendProps({}, options, this.defaults)
+			},
+			set: function(prop, value, switchObj){
+				var attrs = this.attrs,
+					self = this;
+				if(typeof prop == "object"){
+					switchObj = value;
+					for(var item in prop){
+						return setValue(item, prop[item], switchObj);
+					}
+				}else if(typeof prop == "string"){
+					return setValue(prop, value, switchObj);
+				}
+				function setValue(prop, value, silent){
+					if(!prop in attrs){
+						throw new Errow(prop+"没有初始化");
+					}
+					var prevVal = attrs[prop];
+					if(prevVal !== value && (!switchObj || !switchObj.silent)){
+						attrs[prop] = value;
+						return self.trigger.call(self, "change:"+prop, value);
+					}
+				}
+			},
+			unset:function(prop){
+
+			},
+			get: function(type){
+				return this.attrs[type];
+			}
+			
+		}, Event.prototype));
+
+		var Model = ModelBase.extend({
+			defaults:{
+				columnId: 12
+			},
+			get: function(){
+				alert(12)
+			}
+
+		});
+		var model = new Model();
+		model.on("change:columnId", function(a,  m){
+			console.log(a)
+			console.log(this)
+		})
+		model.set("columnId", 14)
+		console.log(model)
+		/* var ControllerBase = Class.extend({
 			events: {"click #get a>li": function(){}},
 			initEvents: function(){},
 			data      : function(){},
@@ -101,9 +152,6 @@
 			},
 			construct: function(options){
 				this.attrs = extendProps({}, options, this.defaults)
-			},
-			set: function(prop, value, silent){
-				
 			},
 			quickBindEvent: function(){    //"click #aaa a": 
 				var self = this, _event, events = this.events
@@ -125,22 +173,9 @@
 					})(ev)
 				}
 			}
-		});
-		var Model = ModelBase.extend({
-			events:{
-				"click #home": function(){
-					alert("home")
-				},
-				"click #back": function(){
-					alert("back")
-				}
-			},
-			get: function(){
-				alert(12)
-			}
 
-		})
-		console.log(new Model())
+		}); */
+		
 
 
 		
