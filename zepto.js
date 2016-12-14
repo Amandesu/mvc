@@ -1109,15 +1109,6 @@
             }
         }
 
-        $.fn.bind = function(event, data, callback) {
-            return this.on(event, data, callback)
-        }
-        $.fn.unbind = function(event, callback) {
-            return this.off(event, callback)
-        }
-        $.fn.one = function(event, selector, data, callback) {
-            return this.on(event, selector, data, callback, 1)
-        }
 
         var returnTrue = function() {
                 return true },
@@ -1175,8 +1166,16 @@
         $.fn.die = function(event, callback) {
             $(document.body).undelegate(this.selector, event, callback)
             return this
+        } 
+        $.fn.bind = function(event, data, callback) {
+            return this.on(event, data, callback)
         }
-        
+        $.fn.unbind = function(event, callback) {
+            return this.off(event, callback)
+        }
+        $.fn.one = function(event, selector, data, callback) {
+            return this.on(event, selector, data, callback, 1)
+        }
         $.fn.on = function(event, selector, data, callback, one) {
             var autoRemove, delegator, $this = this
             if (event && !isString(event)) {
